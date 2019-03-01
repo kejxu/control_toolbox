@@ -36,21 +36,7 @@
 
 #include <control_toolbox/dither.h>
 
-#ifdef _WIN32
 #include <random>
-
-double erand48(unsigned short xsubi[3])
-{
-  // following instructions from https://isocpp.org/files/papers/n3551.pdf
-
-  std::random_device rdev{};
-  std::default_random_engine generator{rdev()};
-
-  // uniform distribution on the interval [0.0, 1.0)
-  std::uniform_real_distribution<double> distribution(0.0, 1.0);
-  return distribution(generator);
-}
-#endif
 
 namespace control_toolbox {
 
@@ -73,10 +59,12 @@ double Dither::update()
 
   // Generates gaussian random noise using the polar method.
   double v1, v2, r;
+  // uniform distribution on the interval [-1.0, 1.0]
+  std::uniform_real_distribution<double> distribution(-1.0, std::nextafter(1.0, std::numeric_limits<double>::max()));
   for (int i = 0; i < 100; ++i)
   {
-    v1 = 2.0 * erand48(seed_) - 1.0;  //  [-1, 1]
-    v2 = 2.0 * erand48(seed_) - 1.0;  //  [-1, 1]
+    v1 = distribution(generator_);
+    v2 = distribution(generator_);
     r = v1*v1 + v2*v2;
     if (r <= 1.0)
       break;
